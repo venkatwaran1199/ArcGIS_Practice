@@ -9,11 +9,17 @@ import androidx.appcompat.widget.SearchView;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.Selection;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +52,7 @@ import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
 import com.esri.arcgisruntime.tasks.networkanalysis.Stop;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -59,22 +66,21 @@ public class MainActivity extends AppCompatActivity {
     public static final String ROUTING_API = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
     public static final String API_KEY = "AAPK026861e3641744818c90e0ae6c270d12Dg_pj59bbpWVU2LC2BztipOpD4DAmGBtw-PbeQhCQGeiyl5xeW2izNTyHmGr-ND-";
     private Point incidentPoint;
-    private EditText searchView;
-    private Button btn_search;
-    double maplat;
-    double mapLong;
+    private EditText searchView,fromText,toText;
+    private ImageView btn_search,btn_route;
+    private double maplat,mapLong;
+    private FloatingActionButton FAB_Navigation;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         //initialize map:
+        initviews();
         MapView mapview=findViewById(R.id.mapview);
-        searchView=findViewById(R.id.searchView);
-        btn_search=findViewById(R.id.searchbutton);
-
-
 
 //--------------------------------------------------------------------Map Display------------------------------------------------------------------------------
            //API KEY Config:
@@ -188,11 +194,14 @@ public class MainActivity extends AppCompatActivity {
 
  */
 
+
+//---------------------------------------------------------------------Routing parameters--------------------------------------------------------
+
+
 //---------------------------------------------------------------------Geo coding----------------------------------------------------------------------------
-      /*  btn_search.setOnClickListener(new View.OnClickListener() {
+        btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mapview.getGraphicsOverlays().clear();
                 //Instance of locatiorTask:
                 LocatorTask locatorTask = new LocatorTask("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
 
@@ -222,7 +231,22 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-        });*/
+        });
+    }
+//Initializing members:
+    private void initviews() {
 
+        searchView=findViewById(R.id.searchView);
+        btn_search=findViewById(R.id.searchbutton);
+        FAB_Navigation=findViewById(R.id.FAB_NAV);
+        fromText=findViewById(R.id.Fromtext);
+        toText=findViewById(R.id.Totext);
+        btn_route=findViewById(R.id.calculateroute);
+    }
+
+    public void fabclick(){
+        fromText.setVisibility(View.VISIBLE);
+        toText.setVisibility(View.VISIBLE);
+        btn_route.setVisibility(View.VISIBLE);
     }
 }
