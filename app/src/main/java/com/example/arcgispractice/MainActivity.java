@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
@@ -11,6 +12,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
@@ -33,6 +38,9 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.SimpleFillSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
+import com.esri.arcgisruntime.tasks.geocode.GeocodeResult;
+import com.esri.arcgisruntime.tasks.geocode.LocatorTask;
+import com.esri.arcgisruntime.tasks.geocode.SuggestResult;
 import com.esri.arcgisruntime.tasks.networkanalysis.Route;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
@@ -51,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String ROUTING_API = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
     public static final String API_KEY = "AAPK026861e3641744818c90e0ae6c270d12Dg_pj59bbpWVU2LC2BztipOpD4DAmGBtw-PbeQhCQGeiyl5xeW2izNTyHmGr-ND-";
     private Point incidentPoint;
+    private EditText searchView;
+    private Button btn_search;
+    double maplat;
+    double mapLong;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -59,8 +71,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //initialize map:
         MapView mapview=findViewById(R.id.mapview);
+        searchView=findViewById(R.id.searchView);
+        btn_search=findViewById(R.id.searchbutton);
 
-        //API KEY Config:
+
+
+//--------------------------------------------------------------------Map Display------------------------------------------------------------------------------
+           //API KEY Config:
         ArcGISRuntimeEnvironment.setApiKey(API_KEY);
 
         //Add basemap:
@@ -98,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         */
 
 //--------------------------------------------------------------------Routing code----------------------------------------------------------------------------
-
+        /*
         SimpleMarkerSymbol originSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFFFFFFFF, 12);
         Graphic originGraphic = new Graphic(new Point(80.2707,13.0827, SpatialReferences.getWgs84()), originSymbol);
 
@@ -166,7 +183,46 @@ public class MainActivity extends AppCompatActivity {
                 //getting directions from route:
                 route.getDirectionManeuvers().forEach(step -> System.out.println(step.getDirectionText()));
             });
-
         });
+
+
+ */
+
+//---------------------------------------------------------------------Geo coding----------------------------------------------------------------------------
+      /*  btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mapview.getGraphicsOverlays().clear();
+                //Instance of locatiorTask:
+                LocatorTask locatorTask = new LocatorTask("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
+
+                ListenableFuture<List<GeocodeResult>> results = locatorTask.geocodeAsync(searchView.getText().toString());
+                results.addDoneListener(() -> {
+                    try {
+                        GeocodeResult result = results.get().get(0);
+                        maplat=result.getDisplayLocation().getX();
+                        mapLong=result.getDisplayLocation().getY();
+                        Log.d(TAG, "corodinates: "+maplat+","+mapLong);
+                        System.out.println("Found " + result.getLabel());
+                        System.out.println("at " + result.getDisplayLocation());
+                        System.out.println("with score " + result.getScore());
+                        Point searchpoint=new Point(maplat,mapLong, SpatialReferences.getWgs84());
+                        Viewpoint viewpoint=new Viewpoint(searchpoint,500000);
+                        mapview.setViewpointAsync(viewpoint,3);
+                        SimpleMarkerSymbol mapPointsymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFF000000, 12);
+                        //Instance of graphics overlay:
+                        GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
+                        //Connect graphics overlay with mapview:
+                        mapview.getGraphicsOverlays().add(graphicsOverlay);
+                        Graphic mappointgraphic=new Graphic(searchpoint,mapPointsymbol);
+                        graphicsOverlay.getGraphics().add(mappointgraphic);
+
+                    } catch (Exception e) {
+                        Log.d(TAG, "error: "+e);
+                    }
+                });
+            }
+        });*/
+
     }
 }
