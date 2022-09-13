@@ -5,7 +5,10 @@
       <map>
         <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/drawable/bg_round.xml" value="0.1315" />
         <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/drawable/bg_routetext.xml" value="0.1315" />
+        <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/drawable/ic_baseline_minimize_24.xml" value="0.1315" />
         <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/drawable/ic_baseline_navigation_24.xml" value="0.1315" />
+        <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/drawable/mapviewbg.xml" value="0.1315" />
+        <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/drawable/routebg.xml" value="0.1315" />
         <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/layout-v28/activity_main.xml" value="0.1578125" />
         <entry key="..\:/ANDROID STUDIO/STUDIO FOR ARCGIS/ArcGISRouting/app/src/main/res/layout/activity_main.xml" value="0.16666666666666666" />
         <entry key="..\:/PRACTICE/ArcGISPractice/app/src/main/res/layout/activity_main.xml" value="0.14375" />

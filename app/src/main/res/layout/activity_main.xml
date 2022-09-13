@@ -15,15 +15,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
         <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
             <EditText
                 android:id="@+id/searchView"
-                android:layout_width="310dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="10dp"
+                android:layout_width="370dp"
+                android:layout_height="55dp"
+                android:layout_marginStart="25dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="20dp"
                 android:background="@drawable/bg_round"
                 android:cursorVisible="true"
                 android:hint="@string/search_here"
@@ -33,10 +33,10 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/search_icon"
+                android:src="@drawable/whitesearch"
                 android:id="@+id/searchbutton"
                 android:layout_marginTop="20dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="15dp"
                 android:layout_alignEnd="@+id/searchView" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -44,51 +44,60 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_marginTop="600dp"
+                android:layout_alignParentBottom="true"
                 android:layout_marginEnd="20dp"
-                android:background="@drawable/bg_round"
-                android:backgroundTint="#019F1B"
-                android:onClick="fabclick"
-                android:src="@drawable/ic_baseline_navigation_24"
-                app:rippleColor="@color/purple_700" />
+                android:layout_marginBottom="20dp"
+                android:backgroundTint="#042522"
+                android:src="@drawable/right_arrow"
+                app:rippleColor="#FAF9FB" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/routebg"
+                android:paddingBottom="10dp"
+                android:layout_marginTop="0dp"
+                android:visibility="invisible"
+                android:id="@+id/routelayout">
                 <EditText
                     android:layout_width="310dp"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:id="@+id/Fromtext"
-                    android:layout_below="@+id/searchView"
                     android:background="@drawable/bg_routetext"
-                    android:layout_marginStart="50dp"
+                    android:layout_marginStart="30dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="10dp"
                     android:hint="@string/enter_origin"
                     android:paddingStart="20dp"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textColorHint="#A59A9A"
-                    android:visibility="invisible"
+                    android:visibility="visible"
                     />
                 <EditText
                     android:layout_width="310dp"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:id="@+id/Totext"
                     android:layout_below="@+id/Fromtext"
                     android:background="@drawable/bg_routetext"
-                    android:layout_marginStart="50dp"
+                    android:layout_marginStart="30dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="10dp"
                     android:hint="Enter destination..."
                     android:paddingStart="20dp"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textColorHint="#A59A9A"
-                    android:visibility="invisible"/>
+                    android:visibility="visible"/>
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:id="@+id/calculateroute"
-                    android:src="@drawable/navigation"
-                    android:layout_marginTop="120dp"
-                    android:layout_marginStart="370dp"
-                    android:visibility="invisible"
+                    android:src="@drawable/route"
+                    android:layout_marginTop="55dp"
+                    android:layout_marginStart="350dp"
+                    android:visibility="visible"
                     />
+            </RelativeLayout>
+
         </RelativeLayout>
 
     </com.esri.arcgisruntime.mapping.view.MapView>

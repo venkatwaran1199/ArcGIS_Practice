@@ -2,6 +2,9 @@ package com.example.arcgispractice;
 
 import static android.content.ContentValues.TAG;
 
+import static com.example.arcgispractice.R.drawable.*;
+
+import androidx.annotation.LongDef;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -20,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView btn_search,btn_route;
     private double maplat,mapLong;
     private FloatingActionButton FAB_Navigation;
+    private RelativeLayout routelayout;
+    private boolean fabstatus;
+    String FromLatLong,ToLatLong;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -81,6 +88,10 @@ public class MainActivity extends AppCompatActivity {
         //initialize map:
         initviews();
         MapView mapview=findViewById(R.id.mapview);
+        fabstatus=true;
+        //Instance of locatiorTask:
+        LocatorTask locatorTask = new LocatorTask("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
+
 
 //--------------------------------------------------------------------Map Display------------------------------------------------------------------------------
            //API KEY Config:
@@ -93,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         //add viewpoint to basemap:
         Point point=new Point(80.3579,13.1289, SpatialReferences.getWgs84());
         Viewpoint viewpoint=new Viewpoint(point,500000);
-        mapview.setViewpointAsync(viewpoint,3);
+        mapview.setViewpointAsync(viewpoint);
 
         //Instance of graphics overlay:
         GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
@@ -120,90 +131,34 @@ public class MainActivity extends AppCompatActivity {
 
         */
 
-//--------------------------------------------------------------------Routing code----------------------------------------------------------------------------
-        /*
-        SimpleMarkerSymbol originSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFFFFFFFF, 12);
-        Graphic originGraphic = new Graphic(new Point(80.2707,13.0827, SpatialReferences.getWgs84()), originSymbol);
-
-        SimpleMarkerSymbol stopSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFFFFFFFF, 8);
-        Graphic stopGraphic = new Graphic(new Point(79.3200, 10.4232, SpatialReferences.getWgs84()), stopSymbol);
-
-        SimpleMarkerSymbol destinationSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFF000000, 12);
-        Graphic destinationGraphic = new Graphic(new Point(77.5385, 8.0883, SpatialReferences.getWgs84()), destinationSymbol);
-
-        Graphic routeGraphic = new Graphic();
-        routeGraphic.setSymbol(new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, 0xFF0596FF, 4));
-
-        //Instance of graphics overlay:
-        GraphicsOverlay routegraphicsOverlay = new GraphicsOverlay();
-        //Connect graphics overlay with mapview:
-        mapview.getGraphicsOverlays().add(routegraphicsOverlay);
-
-        routegraphicsOverlay.getGraphics().addAll(Arrays.asList(routeGraphic,originGraphic, stopGraphic, destinationGraphic));
-
-        //get origin, destination and stopping lat long into a list:
-        List<Stop> stops = routegraphicsOverlay.getGraphics()
-                .stream()
-                .filter(graphic -> graphic.getGeometry() != null)
-                .map(graphic -> new Stop((Point) graphic.getGeometry()))
-                .collect(Collectors.toList());
-
-        //Integrate our api key into routing service:
-        RouteTask routeTask = new RouteTask(MainActivity.this, ROUTING_API);
-       //   RouteTask routeTask = new RouteTask(this,"https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve?f=json&token=AAPK026861e3641744818c90e0ae6c270d12Dg_pj59bbpWVU2LC2BztipOpD4DAmGBtw-PbeQhCQGeiyl5xeW2izNTyHmGr-ND-&stops=80.2707,13.0827;78.1198,9.9252;77.5385,8.0883;&startTime=now&returnDirections=true&directionsLanguage=eng");
-        //Instance for adding parameters:
-        ListenableFuture<RouteParameters> routeParametersFuture = routeTask.createDefaultParametersAsync();
-
-        routeParametersFuture.addDoneListener(() -> {
-            RouteParameters routeParameters = null;
-            try {
-                routeParameters = routeParametersFuture.get();
-                routeParameters.setStops(stops);
-                routeParameters.setReturnDirections(true);
-                routeParameters.setDirectionsLanguage("eng");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            //Instance for route result:
-            ListenableFuture<RouteResult> routeResultFuture = routeTask.solveRouteAsync(routeParameters);
-
-            //getting route geometry from result:
-            routeResultFuture.addDoneListener(() -> {
-                //getting route result:
-                RouteResult routeResult = null;
-                try {
-                    routeResult = routeResultFuture.get();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Log.d(TAG, "onCreate() returned: " + routeResult);
-                //getting route from route result:
-                Route route = routeResult.getRoutes().get(0);
-                Log.d(TAG, "onCreate() returned: " + route);
-
-                //Adding route geometry into our route graphics:
-                routeGraphic.setGeometry(route.getRouteGeometry());
-                Log.d(TAG,"length: "+ route.getTotalLength());
-                Log.d(TAG,"total time: "+ route.getTotalTime());
-                //getting directions from route:
-                route.getDirectionManeuvers().forEach(step -> System.out.println(step.getDirectionText()));
-            });
-        });
-
-
- */
-
 
 //---------------------------------------------------------------------Routing parameters--------------------------------------------------------
+        FAB_Navigation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (fabstatus==true){
+                    routelayout.setVisibility(View.VISIBLE);
+                    searchView.setVisibility(View.INVISIBLE);
+                    btn_search.setVisibility(View.INVISIBLE);
+                    fromText.setFocusable(true);
+                    FAB_Navigation.setImageResource(ic_baseline_minimize_24);
+                    fabstatus=false;
+                }
+                else{
+                    routelayout.setVisibility(View.INVISIBLE);
+                    searchView.setVisibility(View.VISIBLE);
+                    btn_search.setVisibility(View.VISIBLE);
+                    FAB_Navigation.setImageResource(R.drawable.right_arrow);
+                    fabstatus=true;
+                }
+            }
+        });
 
 
 //---------------------------------------------------------------------Geo coding----------------------------------------------------------------------------
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Instance of locatiorTask:
-                LocatorTask locatorTask = new LocatorTask("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
 
                 ListenableFuture<List<GeocodeResult>> results = locatorTask.geocodeAsync(searchView.getText().toString());
                 results.addDoneListener(() -> {
@@ -212,9 +167,6 @@ public class MainActivity extends AppCompatActivity {
                         maplat=result.getDisplayLocation().getX();
                         mapLong=result.getDisplayLocation().getY();
                         Log.d(TAG, "corodinates: "+maplat+","+mapLong);
-                        System.out.println("Found " + result.getLabel());
-                        System.out.println("at " + result.getDisplayLocation());
-                        System.out.println("with score " + result.getScore());
                         Point searchpoint=new Point(maplat,mapLong, SpatialReferences.getWgs84());
                         Viewpoint viewpoint=new Viewpoint(searchpoint,500000);
                         mapview.setViewpointAsync(viewpoint,3);
@@ -232,7 +184,58 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+
+//---------------------------------------------------------------------getting lat and long------------------------------------------------------
+        btn_route.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fromText.getText().toString();
+                toText.getText().toString();
+
+                    //Getting lat long for the places:
+                    Geocoding GeocodingTask=new Geocoding();
+                    if((fromText.getText().toString().isEmpty()&toText.getText().toString().isEmpty())){
+                    Toast.makeText(MainActivity.this, "Enter valid place", Toast.LENGTH_SHORT).show();
+                }
+                    else{
+                    GeocodingTask.GeocodingTask(fromText.getText().toString(), new Geocoding.GeocodingResponceListener() {
+                        @Override
+                        public void onError(String message) {
+                            Log.d(TAG, "onErrorFrom: "+message);
+                        }
+
+                        @Override
+                        public void onResponse(String fromLatLong) {
+                            FromLatLong=fromLatLong;
+                        //    Log.d(TAG, "onResponseFrom: "+FromLatLong);
+                      //      Toast.makeText(MainActivity.this, "Fromlatlong:"+FromLatLong, Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+                    GeocodingTask.GeocodingTask(toText.getText().toString(), new Geocoding.GeocodingResponceListener() {
+                                @Override
+                                public void onError(String message) {
+                                    Log.d(TAG, "onErrorTo: "+message);
+
+                                }
+
+                                @Override
+                                public void onResponse(String toLatLong) {
+                                    ToLatLong=toLatLong;
+                                    Routing route=new Routing(MainActivity.this,(MapView) mapview);
+                                    route.CalculateRoute(FromLatLong,ToLatLong);
+                                }
+                            });
+                }
+            }
+        });
+
+
     }
+
+
+
 //Initializing members:
     private void initviews() {
 
@@ -242,11 +245,7 @@ public class MainActivity extends AppCompatActivity {
         fromText=findViewById(R.id.Fromtext);
         toText=findViewById(R.id.Totext);
         btn_route=findViewById(R.id.calculateroute);
+        routelayout=findViewById(R.id.routelayout);
     }
 
-    public void fabclick(){
-        fromText.setVisibility(View.VISIBLE);
-        toText.setVisibility(View.VISIBLE);
-        btn_route.setVisibility(View.VISIBLE);
-    }
 }
