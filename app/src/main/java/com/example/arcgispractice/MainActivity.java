@@ -8,8 +8,10 @@ import androidx.annotation.LongDef;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -45,11 +47,14 @@ import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.navigation.RouteTracker;
+import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleFillSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.tasks.geocode.GeocodeResult;
 import com.esri.arcgisruntime.tasks.geocode.LocatorTask;
+import com.esri.arcgisruntime.tasks.geocode.ReverseGeocodeParameters;
 import com.esri.arcgisruntime.tasks.geocode.SuggestResult;
 import com.esri.arcgisruntime.tasks.networkanalysis.Route;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
@@ -92,24 +97,57 @@ public class MainActivity extends AppCompatActivity {
         //Instance of locatiorTask:
         LocatorTask locatorTask = new LocatorTask("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
 
-
 //--------------------------------------------------------------------Map Display------------------------------------------------------------------------------
            //API KEY Config:
         ArcGISRuntimeEnvironment.setApiKey(API_KEY);
 
         //Add basemap:
-        ArcGISMap arcsgisMap=new ArcGISMap(Basemap.createOpenStreetMap());
+        ArcGISMap arcsgisMap=new ArcGISMap(BasemapStyle.ARCGIS_STREETS);
         mapview.setMap(arcsgisMap);
 
+      //  PictureMarkerSymbol PMS=new PictureMarkerSymbol("https://img.icons8.com/officexs/344/marker.png");
+        //Get icon from drawable  folder:
+
+
         //add viewpoint to basemap:
-        Point point=new Point(80.3579,13.1289, SpatialReferences.getWgs84());
+        Point point=new Point(79.3200,10.4232, SpatialReferences.getWgs84());
         Viewpoint viewpoint=new Viewpoint(point,500000);
-        mapview.setViewpointAsync(viewpoint);
+        mapview.setViewpointAsync(viewpoint,3);
+
+
 
         //Instance of graphics overlay:
         GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
         //Connect graphics overlay with mapview:
         mapview.getGraphicsOverlays().add(graphicsOverlay);
+//        BitmapDrawable pinStarBlueDrawable = (BitmapDrawable) ContextCompat.getDrawable(this, navigation);
+//        if (pinStarBlueDrawable != null) {
+//            // create the picture marker symbol asynchronously
+//            ListenableFuture<PictureMarkerSymbol> pinStarBlueSymbolFuture = PictureMarkerSymbol.createAsync(pinStarBlueDrawable);
+//            // listen for the create to finish
+//            pinStarBlueSymbolFuture.addDoneListener(() -> {
+//                try {
+//                    // get the created picture marker symbol
+//                    PictureMarkerSymbol pinStarBlueSymbol = pinStarBlueSymbolFuture.get();
+//
+//                    // set the size, if not set the image will be auto sized based on its size in pixels
+//                    pinStarBlueSymbol.setHeight(30);
+//                    pinStarBlueSymbol.setWidth(30);
+//                    // set the offset, to align the base of the symbol aligns with the point geometry
+//                    pinStarBlueSymbol.setOffsetY(10);
+//                    //[DocRef: END]
+//                    // add a new graphic with the same location as the initial viewpoint
+//                    Point pinStarBluePoint = new Point(80.2707, 13.0827, SpatialReferences.getWgs84());
+//                    Graphic pinStarBlueGraphic = new Graphic(pinStarBluePoint, pinStarBlueSymbol);
+//                    graphicsOverlay.getGraphics().add(pinStarBlueGraphic);
+//                } catch (Exception e) {
+//                    String error = "Error loading picture marker symbol: " + e.getMessage();
+//                    Log.e(TAG, error);
+//                    Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+//                }
+//            });
+//        }
+
 
 //-----------------------------------------------------------------click on map event-------------------------------------------------------------------------
         /*   mapview.setOnTouchListener(new DefaultMapViewOnTouchListener(this,mapview) {
@@ -154,37 +192,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
 //---------------------------------------------------------------------Geo coding----------------------------------------------------------------------------
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(searchView.getText().toString().isEmpty()){
+                    Toast.makeText(MainActivity.this, "Enter place...", Toast.LENGTH_SHORT).show();
+                }else{
+                    ListenableFuture<List<GeocodeResult>> results = locatorTask.geocodeAsync(searchView.getText().toString());
+                    results.addDoneListener(() -> {
+                        try {
+                            GeocodeResult result = results.get().get(0);
+                            maplat=result.getDisplayLocation().getX();
+                            mapLong=result.getDisplayLocation().getY();
+                            Log.d(TAG, "corodinates: "+maplat+","+mapLong);
+                            Point searchpoint=new Point(maplat,mapLong, SpatialReferences.getWgs84());
+                            Viewpoint viewpoint=new Viewpoint(searchpoint,5000);
+                            mapview.setViewpointAsync(viewpoint,3);
+                            SimpleMarkerSymbol mapPointsymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFF000000, 12);
+                            //Instance of graphics overlay:
+                            GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
+                            //Connect graphics overlay with mapview:
+                            mapview.getGraphicsOverlays().add(graphicsOverlay);
+                            Graphic mappointgraphic=new Graphic(searchpoint,mapPointsymbol);
+                            graphicsOverlay.getGraphics().add(mappointgraphic);
 
-                ListenableFuture<List<GeocodeResult>> results = locatorTask.geocodeAsync(searchView.getText().toString());
-                results.addDoneListener(() -> {
-                    try {
-                        GeocodeResult result = results.get().get(0);
-                        maplat=result.getDisplayLocation().getX();
-                        mapLong=result.getDisplayLocation().getY();
-                        Log.d(TAG, "corodinates: "+maplat+","+mapLong);
-                        Point searchpoint=new Point(maplat,mapLong, SpatialReferences.getWgs84());
-                        Viewpoint viewpoint=new Viewpoint(searchpoint,500000);
-                        mapview.setViewpointAsync(viewpoint,3);
-                        SimpleMarkerSymbol mapPointsymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFF000000, 12);
-                        //Instance of graphics overlay:
-                        GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
-                        //Connect graphics overlay with mapview:
-                        mapview.getGraphicsOverlays().add(graphicsOverlay);
-                        Graphic mappointgraphic=new Graphic(searchpoint,mapPointsymbol);
-                        graphicsOverlay.getGraphics().add(mappointgraphic);
-
-                    } catch (Exception e) {
-                        Log.d(TAG, "error: "+e);
-                    }
-                });
+                        } catch (Exception e) {
+                            Log.d(TAG, "error: "+e);
+                        }
+                    });
+                }
             }
         });
-
 
 //---------------------------------------------------------------------getting lat and long------------------------------------------------------
         btn_route.setOnClickListener(new View.OnClickListener() {
@@ -208,30 +247,54 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(String fromLatLong) {
                             FromLatLong=fromLatLong;
-                        //    Log.d(TAG, "onResponseFrom: "+FromLatLong);
-                      //      Toast.makeText(MainActivity.this, "Fromlatlong:"+FromLatLong, Toast.LENGTH_SHORT).show();
-
                         }
                     });
                     GeocodingTask.GeocodingTask(toText.getText().toString(), new Geocoding.GeocodingResponceListener() {
                                 @Override
                                 public void onError(String message) {
                                     Log.d(TAG, "onErrorTo: "+message);
-
                                 }
 
                                 @Override
                                 public void onResponse(String toLatLong) {
                                     ToLatLong=toLatLong;
                                     Routing route=new Routing(MainActivity.this,(MapView) mapview);
-                                    route.CalculateRoute(FromLatLong,ToLatLong);
+                                    route.CalculateRoute(FromLatLong, ToLatLong, new Routing.RoutingResponceListener() {
+                                        @Override
+                                        public void onError(String message) {
+                                            Toast.makeText(MainActivity.this,"error:"+ message, Toast.LENGTH_SHORT).show();
+                                        }
+
+                                        @Override
+                                        public void onResponse(String LatLong) {
+                                            routelayout.setVisibility(View.INVISIBLE);
+                                            searchView.setVisibility(View.VISIBLE);
+                                            btn_search.setVisibility(View.VISIBLE);
+                                            FAB_Navigation.setImageResource(R.drawable.right_arrow);
+                                            fabstatus=true;
+                                            Toast.makeText(MainActivity.this, "Routing successfull", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                 }
                             });
                 }
             }
         });
 
-
+//----------------------------------------------------------------------reverse geocode----------------------------------------------------------
+        ListenableFuture<List<GeocodeResult>> new_results=locatorTask.reverseGeocodeAsync(point);
+        new_results.addDoneListener(()->{
+            try {
+                List<GeocodeResult> newanswer=new_results.get();
+                GeocodeResult geocode = newanswer.get(0);
+                Toast.makeText(this, "answer: "+ geocode.getAttributes().get("LongLabel").toString(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onCreatenewanswer: "+geocode.getAttributes().get("City").toString());
+            } catch (Exception e) {
+                Toast.makeText(this, "error", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        });
+        
     }
 
 

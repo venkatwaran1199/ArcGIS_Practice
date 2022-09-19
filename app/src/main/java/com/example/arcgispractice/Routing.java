@@ -4,15 +4,14 @@ import static android.content.ContentValues.TAG;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
-import com.esri.arcgisruntime.mapping.Viewpoint;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.tasks.networkanalysis.Route;
@@ -26,9 +25,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Routing {
-    private Context context;
+    private final Context context;
     private double OriginLatitude,OriginLongitude,DestinationLatitude,DestinationLongitude;
-    private MapView mapview;
+    private final MapView mapview;
 
     public Routing(Context context, MapView mapview) {
         this.context = context;
@@ -38,12 +37,12 @@ public class Routing {
     public interface RoutingResponceListener {
         void onError(String message);
 
-        void onResponse(String LatLong);
+        void onResponse(String result);
     }
 
     private static final String ROUTING_API = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
-    public void CalculateRoute(String OriginCoords,String DestinationCoords){
+    public void CalculateRoute(String OriginCoords,String DestinationCoords, RoutingResponceListener RRS){
 
         String[] arrOforigin = OriginCoords.split(",", 2);
         String orinlong=arrOforigin[0];
@@ -57,18 +56,16 @@ public class Routing {
         DestinationLongitude=Double.parseDouble(destlat);
         DestinationLatitude=Double.parseDouble(destlong);
 
-        Log.d(TAG, "CalculateRoute origin: "+OriginCoords);
+/*        Log.d(TAG, "CalculateRoute origin: "+OriginCoords);
         Log.d(TAG, "CalculateRoute destination: "+DestinationCoords);
         Log.d(TAG, "CalculateRouteFinalorinlat: "+OriginLatitude);
         Log.d(TAG, "CalculateRouteFinalorinlong: "+OriginLongitude);
         Log.d(TAG, "CalculateRouteFinaldestlat: "+DestinationLatitude);
-        Log.d(TAG, "CalculateRouteFinaldestlong: "+DestinationLongitude);
+        Log.d(TAG, "CalculateRouteFinaldestlong: "+DestinationLongitude);*/
+      //  PictureMarkerSymbol PMS=new PictureMarkerSymbol("https://cdn-icons-png.flaticon.com/512/684/684908.png");
 
          SimpleMarkerSymbol originSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFFFFFFFF, 12);
         Graphic originGraphic = new Graphic(new Point(OriginLatitude,OriginLongitude, SpatialReferences.getWgs84()), originSymbol);
-
-//        SimpleMarkerSymbol stopSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFFFFFFFF, 8);
-//        Graphic stopGraphic = new Graphic(new Point(79.3200, 10.4232, SpatialReferences.getWgs84()), stopSymbol);
 
         SimpleMarkerSymbol destinationSymbol = new SimpleMarkerSymbol((SimpleMarkerSymbol.Style.CIRCLE), 0xFF000000, 12);
         Graphic destinationGraphic = new Graphic(new Point(DestinationLatitude,DestinationLongitude, SpatialReferences.getWgs84()), destinationSymbol);
@@ -126,9 +123,9 @@ public class Routing {
                 //Adding route geometry into our route graphics:
                 routeGraphic.setGeometry(route.getRouteGeometry());
                 mapview.setViewpointGeometryAsync(route.getRouteGeometry());
-
                 //getting directions from route:
                 //route.getDirectionManeuvers().forEach(step -> System.out.println(step.getDirectionText()));
+                RRS.onResponse("success");
             });
         });
     }

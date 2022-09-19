@@ -14,7 +14,6 @@ import java.util.List;
 public class Geocoding {
 
         private  double lat,Long;
-        private  double Lat_and_Long;
 
         public interface GeocodingResponceListener {
         void onError(String message);
@@ -22,9 +21,9 @@ public class Geocoding {
         void onResponse(String LatLong);
     }
 
-        public double GeocodingTask(String placeName,GeocodingResponceListener GCRS){
+        public void GeocodingTask(String placeName,GeocodingResponceListener GCRS){
         LocatorTask locatorTask = new LocatorTask("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
-      //  Log.d(TAG, "GeocodingTask: "+placeName);
+
         ListenableFuture<List<GeocodeResult>> results = locatorTask.geocodeAsync(placeName);
         results.addDoneListener(() -> {
             try {
@@ -43,6 +42,5 @@ public class Geocoding {
                 GCRS.onError("Exception occur");
             }
         });
-        return Lat_and_Long;
     }
 }
